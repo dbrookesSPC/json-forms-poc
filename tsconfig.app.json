@@ -4,8 +4,11 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "outDir": "./out-tsc/app",
-    "types": []
-  },
+    "types": ["node"],
+ "esModuleInterop": true,               // allows default-importing CommonJS modules
+    "allowSyntheticDefaultImports": true,  // type-checker allows default imports
+    "skipLibCheck": true                   // optional: speeds up build by skipping .d.ts checks
+      },
   "include": [
     "src/**/*.ts"
   ],
