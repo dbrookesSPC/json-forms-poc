@@ -20,7 +20,7 @@ import { CommonModule } from '@angular/common';
           [placeholder]="placeholder"
           [disabled]="!enabled"
           [required]="isRequired"
-          (input)="onChange($event)"
+          (input)="handleInputChange($event)"
           (blur)="onBlur()"
           (focus)="onFocus()"
           [class.focused]="isFocused"
@@ -182,19 +182,42 @@ export class CustomInputRendererComponent extends JsonFormsControl implements On
     super.ngOnDestroy();
   }
 
-  override onChange(event: Event): void {
+  handleInputChange(event: Event): void {
     const target = event.target as HTMLInputElement;
     let value: any = target.value;
+    
+    console.log('CustomInputRendererComponent handleInputChange called', value, 'path:', this.path, 'current data:', this.data);
     
     // Convert value based on schema type
     if (this.schema?.type === 'number' || this.schema?.type === 'integer') {
       value = value === '' ? undefined : Number(value);
+    } else if (this.schema?.type === 'boolean') {
+      value = target.checked;
     }
     
-    // Use the proper method to update the data
-    this.jsonFormsService.updateCore(
-      Actions.update(this.path!, () => value)
-    );
+    // Check if path is available, if not, try to get it from uischema
+    let targetPath = this.path;
+    if (!targetPath && this.uischema?.scope) {
+      // Extract path from scope like "#/properties/name" -> "name"
+      targetPath = this.uischema.scope.replace('#/properties/', '');
+    }
+    
+    console.log('Using path:', targetPath);
+    
+    if (targetPath) {
+      // Update the JsonForms core state using Actions.update
+      this.jsonFormsService.updateCore(
+        Actions.update(targetPath, () => value)
+      );
+      
+      console.log('After update - data should be:', value, 'at path:', targetPath);
+    } else {
+      console.error('No path available for updating data', {
+        path: this.path,
+        scope: this.uischema?.scope,
+        uischema: this.uischema
+      });
+    }
   }
 
   onFocus(): void {

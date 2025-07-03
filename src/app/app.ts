@@ -276,10 +276,23 @@ export class App implements OnInit {
 
   onJsonFormsDataChange(event: any) {
     console.log('JSON Forms data changed:', event);
-    if (event) {
-      this.data = { ...this.data, ...event };
+    
+    // The event might be empty, but we can access the current data from the form
+    // Let's check both the event and try to get data from other sources
+    
+    if (event && typeof event === 'object' && Object.keys(event).length > 0) {
+      // If event has data, use it
+      Object.assign(this.data, event);
+      this.dataText = JSON.stringify(this.data, null, 2);
+    } else {
+      // If event is empty, try to get the data from the current form state
+      // We'll update the dataText with the current this.data state
+      console.log('Event is empty, using current data state:', this.data);
       this.dataText = JSON.stringify(this.data, null, 2);
     }
+    
+    // Trigger change detection
+    this.cdr.detectChanges();
   }
 
 }

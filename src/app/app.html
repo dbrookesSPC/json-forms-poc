@@ -281,8 +281,14 @@
 
      
 
-      <jsonforms [data]="data" [schema]="schema" [uischema]="uischema" [renderers]="renderers" 
-        [ajv]="ajv" (dataChange)="onJsonFormsDataChange($event)" ></jsonforms>
+      <jsonforms 
+        [data]="data" 
+        [schema]="schema" 
+        [uischema]="uischema" 
+        [renderers]="renderers" 
+        [ajv]="ajv" 
+        (dataChange)="onJsonFormsDataChange($event)">
+      </jsonforms>
     </div>
   </div>
 </main>
