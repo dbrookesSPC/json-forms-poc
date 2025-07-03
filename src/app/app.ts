@@ -3,6 +3,7 @@ import { RouterOutlet } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { angularMaterialRenderers } from '@jsonforms/angular-material';
 import { and, createAjv, isControl, optionIs, rankWith, schemaTypeIs, scopeEndsWith, Tester } from '@jsonforms/core';
+import { customInputRendererEntry } from './custom-input-renderer.component';
 import { JsonSchema, UISchemaElement } from '@jsonforms/core';
 import { JsonFormsModule } from '@jsonforms/angular';
 import $RefParser from "@apidevtools/json-schema-ref-parser";
@@ -25,8 +26,8 @@ export class App implements OnInit {
     allErrors: true
   });
    renderers = [
+    customInputRendererEntry,
     ...angularMaterialRenderers,
-  
   ];
       schema: JsonSchema = {
        type: 'object',
@@ -199,10 +200,26 @@ export class App implements OnInit {
     if (schema.properties) {
       const elements: any[] = [];
       Object.keys(schema.properties).forEach(key => {
-        elements.push({
+        const property = schema.properties[key];
+        
+        // Use custom renderer for specific fields (string fields that are not readonly)
+        const useCustomRenderer = property.type?.includes('string') && 
+                                property.fieldType !== 'ReadOnly' &&
+                                ['Id', 'name', 'Address', 'AdminEmail'].includes(key);
+        
+        const element: any = {
           type: 'Control',
           scope: `#/properties/${key}`
-        });
+        };
+        
+        if (useCustomRenderer) {
+          element.options = {
+            customStyle: true,
+            placeholder: property.description || `Enter ${property.displayName || key}`
+          };
+        }
+        
+        elements.push(element);
       });
       
       return {
@@ -258,10 +275,11 @@ export class App implements OnInit {
   }
 
   onJsonFormsDataChange(event: any) {
-
+    console.log('JSON Forms data changed:', event);
     if (event) {
       this.data = { ...this.data, ...event };
       this.dataText = JSON.stringify(this.data, null, 2);
     }
   }
+
 }
